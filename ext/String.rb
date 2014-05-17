@@ -1,7 +1,7 @@
 class ::String
   def replaceVar( arr )
     arr.each do |k,v|
-      self.sub! "%%{#{k}}" , v
+      self.sub! "%%{#{k}}" , "#{v}"
     end
   end
   
@@ -10,6 +10,6 @@ class ::String
   end
   
   def buildRecord( val )
-    return val
+    return val == "\r" ? nil : val
   end
 end

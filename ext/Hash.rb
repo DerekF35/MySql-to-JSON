@@ -18,22 +18,26 @@ class Hash
     end
 
     def buildRecord( val = nil , opts = {})
-      opts = {:isarray => false}.merge(opts)
+      opts = {:isarray => false , :batchsize => nil , :forceblankarray => true , :startrow=> 0}.merge(opts)
       if self.has_key?("objqry")
         qry = "#{self["objqry"]}"
         # TODO include other keys from previous row in qry replace
         qry.replaceVar({$DATABASE_KEY=>$DATABASE_NAME})
-        puts "Executing qry: #{qry}"
+        if val.is_a?(Hash)
+          qry.replaceVar(val)
+        end
+        if !opts[:batchsize].nil?
+           qry = "#{qry} LIMIT #{opts[:startrow]} , #{opts[:batchsize]}"
+        end
+        if $DEBUG then  puts "Executing qry: #{qry}" end
         out = Array.new
         found = false
         $client.query(qry).each do |row|
           found = true
           tmp = self.cleanLayout
-          puts tmp
           row.each do |k,v|
             if tmp.has_key?(k)
-                puts k
-                tmp[k] = self[k].buildRecord(v)
+                tmp[k] =  (self[k].class == Array || self[k].class == Hash) ? self[k].buildRecord(row) : self[k].buildRecord(v)
              else
               puts "No #{k} key in layout"
             end
@@ -41,7 +45,8 @@ class Hash
           end
           out << tmp
         end
-        if !found
+        if !found && opts[:forceblankarray]
+           #if no results found, blank layout is sent.  need make this a param
             out << self.cleanLayout
         end
         return opts[:isarray] == true ? out : out[0]

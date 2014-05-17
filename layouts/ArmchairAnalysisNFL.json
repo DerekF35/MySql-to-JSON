@@ -1,5 +1,5 @@
 [{
-  "objqry": "SELECT * FROM `%%{db}`.`core` ORDER BY `PID` ASC LIMIT 1",
+  "objqry": "SELECT * FROM `%%{db}`.`core`",
   "PID": "int",
   "GID": "int",
   "OFF": "text",
@@ -19,7 +19,7 @@
   "YFOG": "int",
   "ZONE": "int",
   "OLID": {
-    "objqry": "SELECT * FROM `%%{db}`.`oline` WHERE `OLID` = 1",
+    "objqry": "SELECT * FROM `%%{db}`.`oline` WHERE `OLID` = %%{OLID}",
     "OLID": "int",
     "LT": {
       "objqry": "SELECT * FROM `%%{db}`.`players` WHERE `PLAYER` = '%%{LT}'",
