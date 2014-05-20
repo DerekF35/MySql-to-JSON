@@ -1,6 +1,6 @@
 
 class Hash
-    def removeKeys(  deletekeys = ["objqry"] )
+    def removeKeys(  deletekeys = ["objqry","objactive"] )
       deletekeys.each do |toDel|
           if self.has_key?(toDel)
             self.delete(toDel)
@@ -12,14 +12,18 @@ class Hash
        clnLayout = self.clone
        clnLayout.removeKeys
         clnLayout.each do |k,v|
-          clnLayout[k] = v.cleanLayout
+            if v == false
+              clnLayout.delete(k)
+            else
+              clnLayout[k] = v.cleanLayout
+            end
        end
        return clnLayout
     end
 
     def buildRecord( val = nil , opts = {})
       opts = {:isarray => false , :batchsize => nil , :forceblankarray => true , :startrow=> 0}.merge(opts)
-      if self.has_key?("objqry")
+      if self.has_key?("objqry") && !(self.has_key?("objactive") and self["objactive"] == false)
         qry = "#{self["objqry"]}"
         # TODO include other keys from previous row in qry replace
         qry.replaceVar({$DATABASE_KEY=>$DATABASE_NAME})
@@ -35,14 +39,13 @@ class Hash
         $client.query(qry).each do |row|
           found = true
           tmp = self.cleanLayout
-          row.each do |k,v|
-            if tmp.has_key?(k)
-                tmp[k] =  (self[k].class == Array || self[k].class == Hash) ? self[k].buildRecord(row) : self[k].buildRecord(v)
-             else
-              puts "No #{k} key in layout"
-            end
-            # TODO: handle when key in layout not in db
-          end
+          tmplayout = self.clone
+          tmplayout.removeKeys
+          tmplayout.each do |k,v|
+              if v != false
+                tmp[k] =  (v.class == Array || v.class == Hash) ? v.buildRecord(row) : v.buildRecord(row[k])
+              end
+          end 
           out << tmp
         end
         if !found && opts[:forceblankarray]
@@ -50,9 +53,6 @@ class Hash
             out << self.cleanLayout
         end
         return opts[:isarray] == true ? out : out[0]
-      else
-        puts "No Object Query... Script Aborted"
-        abort
       end
     end
 end

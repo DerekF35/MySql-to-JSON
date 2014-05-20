@@ -12,6 +12,7 @@ $OUTPUT_FILE = "json_out.json"
 $DEBUG = false
 $BATCHSIZE = 1000
 $STARTROW = 0
+$ESTSTOP = 1
 
 $client = Mysql2::Client.new(:host => "localhost", :username => "root")
 
@@ -28,7 +29,7 @@ prsstart = Time.new
 
 while(continue)
   puts "#{Time.new} >>> Batch ##{batch} >>> Starting Conversion..."
-  output = layout.buildRecord(nil , {:batchsize => $BATCHSIZE , :startrow => startnum })
+  output = layout.buildRecord(nil , {:batchsize => $BATCHSIZE , :startrow => startnum , :forceblankarray => false })
   puts "#{Time.new} >>> Batch ##{batch} >>> Conversion Complete"
   
   if output.size == 0
@@ -37,12 +38,12 @@ while(continue)
   else
     startnum = startnum + $BATCHSIZE
   end
-  
+ 
   puts "#{Time.new} >>> Batch ##{batch} >>> Writing to output file..."
   File.open($OUTPUT_FILE, 'w') {|f| 
     f.write(output.to_json) 
   }
-  puts "#{Time.new} >>> Batch ##{batch} >>> Builk API file write completed. JSON written to #{$OUTPUT_FILE}"
+  puts "#{Time.new} >>> Batch ##{batch} >>> Bulk API file write completed. JSON written to #{$OUTPUT_FILE}"
   
   puts "#{Time.new} >>> Batch ##{batch} >>> Posting to Elastic Search..."
   str = ""
@@ -56,12 +57,16 @@ while(continue)
   
   puts "#{Time.new} >>> Batch ##{batch} >>> Posting to ElasticSearch complete"
   batch += 1
-  sleep(3)
+  if $ESTSTOP != -1 && startnum >= $ESTSTOP 
+     break
+   end
+   
+  sleep(1)
 end
 
 prsend = Time.new
 
 puts "#{Time.new} >>> JOB COMPLETE"
-puts "Job Duration: #{prsend - prsstart}"
+puts "Job Duration: #{(prsend - prsstart)/60.0}"
    
 

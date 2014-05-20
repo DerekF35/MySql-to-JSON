@@ -10,7 +10,7 @@ class Array
   
   def buildRecord( val = nil  ,  opts = {})
       self.each do |w|
-        return w.buildRecord(nil , {:isarray => true}.merge!(opts))
+        return w.buildRecord(val , {:isarray => true}.merge!(opts))
       end
   end
 end
