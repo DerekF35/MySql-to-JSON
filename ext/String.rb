@@ -10,6 +10,16 @@ class ::String
   end
   
   def buildRecord( val )
-    return val == "\r" ? nil : val
+    val = val == "\r" ? nil : val
+    case self
+      when "text"
+        return val.to_s
+      when "int"
+        return val.to_i
+      when "double"
+        return val.to_f
+      else
+        return val
+    end
   end
 end
