@@ -722,7 +722,7 @@
             },
             "KRY": "int"
         },
-        "PENALTIS": [
+        "PENALTIES": [
             {
                 "objqry": "SELECT * FROM %%{db}.`PENALTIES` WHERE `PID` = %%{PID}",
                 "PTM": "text",
